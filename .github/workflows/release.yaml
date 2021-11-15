@@ -1,0 +1,72 @@
+name: policy-build-release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  release_policy:
+    runs-on: ubuntu-latest
+    name: build
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Get secrets
+      id: write_file
+      uses: timheuer/base64-to-file@v1
+      with:
+        fileName: 'secrets.json'
+        encodedString: ${{ secrets.PUSH_KEY }}
+
+    - name: Get password
+      id: password
+      uses: notiz-dev/github-action-json-property@release
+      with:
+        path: ${{ steps.write_file.outputs.filePath }}
+        prop_path: 'password'
+    - name: Get username
+      id: username
+      uses: notiz-dev/github-action-json-property@release
+      with:
+        path: ${{ steps.write_file.outputs.filePath }}
+        prop_path: 'username'
+    - name: Get org
+      id: org
+      uses: notiz-dev/github-action-json-property@release
+      with:
+        path: ${{ steps.write_file.outputs.filePath }}
+        prop_path: 'org'
+    - name: Get image
+      id: image
+      uses: notiz-dev/github-action-json-property@release
+      with:
+        path: ${{ steps.write_file.outputs.filePath }}
+        prop_path: 'image'
+
+    - name: Policy Login
+      id: policy-login
+      uses: opcr-io/policy-login-action@v1
+      with:
+        username: ${{ steps.username.outputs.prop }}
+        password: ${{ steps.password.outputs.prop }}
+
+    - name: Policy Build
+      id: policy-build
+      uses: opcr-io/policy-build-action@v1
+      with:
+        src: src
+        tag: ${{ steps.org.outputs.prop}}/${{steps.image.outputs.prop }}:${{ steps.sver.outputs.version }}
+        revision: "$GITHUB_SHA"
+
+    - name: Policy Push
+      id: policy-push
+      uses: opcr-io/policy-push-action@v1
+      with:
+        tag: ${{ steps.org.outputs.prop }}/${{ steps.image.outputs.prop }}:${{ steps.sver.outputs.version }}
+
+
+    - name: Policy Logout
+      id: policy-logout
+      uses: opcr-io/policy-logout-action@v1
