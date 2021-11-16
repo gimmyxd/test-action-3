@@ -1,3 +1,1 @@
-server: opcr.io
-username: gimmyxd
-repo: test-action-3
+server: opcr.io \n username: gimmyxd \n repo: test-action-3
