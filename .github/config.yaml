@@ -1,6 +1,5 @@
 
-		server: opcr.io
-		username: gimmyxd
-		repo: test-action-3
-		\n
-	
+server: opcr.io
+username: gimmyxd
+repo: test-action-3
+
